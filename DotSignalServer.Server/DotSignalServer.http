@@ -1,0 +1,6 @@
+@DotSignalServer_HostAddress = http://localhost:5015
+
+GET {{DotSignalServer_HostAddress}}/ws/
+Accept: application/json
+
+###

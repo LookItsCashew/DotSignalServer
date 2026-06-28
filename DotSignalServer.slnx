@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="DotSignalServer.Client/DotSignalServer.Client.csproj" />
+  <Project Path="DotSignalServer.Domain/DotSignalServer.Domain.csproj" />
+  <Project Path="DotSignalServer.Server/DotSignalServer.Server.csproj" />
+</Solution>
