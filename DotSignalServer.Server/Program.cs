@@ -11,6 +11,8 @@ namespace DotSignalServer.Server;
 
 class Program
 {
+    private static List<Peer> _connectedPeers = [];
+    
     private static async Task Echo(WebSocket webSocket)
     {
         var buffer = new byte[1024 * 4];
@@ -45,7 +47,7 @@ class Program
 
         var app = builder.Build();
 
-        var webSocketOptions = new WebSocketOptions { KeepAliveInterval = System.TimeSpan.FromMinutes(2) };
+        var webSocketOptions = new WebSocketOptions { KeepAliveInterval = TimeSpan.FromMinutes(2) };
         app.UseWebSockets(webSocketOptions);
 
         // Configure the HTTP request pipeline.
@@ -66,13 +68,23 @@ class Program
                 if (context.WebSockets.IsWebSocketRequest)
                 {
                     using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                    await Echo(webSocket);
+                    //await Echo(webSocket);
                 }
                 else context.Response.StatusCode = StatusCodes.Status400BadRequest;
             }
             else
             {
                 await next();
+            }
+        });
+        
+        app.MapGet("/",  async context =>
+        {
+            if (context.WebSockets.IsWebSocketRequest)
+            {
+                using var socket = await context.WebSockets.AcceptWebSocketAsync();
+                var peer = new Peer() { Id = Guid.NewGuid().ToString(), Socket =  socket };
+                _connectedPeers.Add(peer);
             }
         });
         
