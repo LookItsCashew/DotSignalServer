@@ -2,6 +2,7 @@ using System;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using DotSignalServer.Server.Peers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,31 +12,7 @@ namespace DotSignalServer.Server;
 
 class Program
 {
-    private static List<Peer> _connectedPeers = [];
-    
-    private static async Task Echo(WebSocket webSocket)
-    {
-        var buffer = new byte[1024 * 4];
-        var receiveResult = await webSocket.ReceiveAsync(
-            new ArraySegment<byte>(buffer), CancellationToken.None);
-
-        while (!receiveResult.CloseStatus.HasValue)
-        {
-            await webSocket.SendAsync(
-                new ArraySegment<byte>(buffer, 0, receiveResult.Count),
-                receiveResult.MessageType,
-                receiveResult.EndOfMessage,
-                CancellationToken.None);
-
-            receiveResult = await webSocket.ReceiveAsync(
-                new ArraySegment<byte>(buffer), CancellationToken.None);
-        }
-
-        await webSocket.CloseAsync(
-            receiveResult.CloseStatus.Value,
-            receiveResult.CloseStatusDescription,
-            CancellationToken.None);
-    }
+    private static readonly PeerServer PeerServer = new();
     
     public static void Main(string[] args)
     {
@@ -84,7 +61,9 @@ class Program
             {
                 using var socket = await context.WebSockets.AcceptWebSocketAsync();
                 var peer = new Peer() { Id = Guid.NewGuid().ToString(), Socket =  socket };
-                _connectedPeers.Add(peer);
+                await PeerServer.OnPeerConnected(peer);
+                app.Logger.LogInformation($"Peer Connected. Id: {peer.Id + Environment.NewLine}");
+                await PeerServer.Echo(socket);
             }
         });
         

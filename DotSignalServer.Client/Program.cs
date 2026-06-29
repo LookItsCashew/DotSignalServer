@@ -14,8 +14,15 @@ class Program
         Console.WriteLine("Enter a nickname: ");
         var name = Console.ReadLine();
         
-        await socket.ConnectAsync(new Uri("ws://localhost:5015/ws"), CancellationToken.None);
-        WebSocketReceiveResult receiveResult;
+        await socket.ConnectAsync(new Uri("ws://localhost:5015/"), CancellationToken.None);
+        WebSocketReceiveResult receiveResult = await socket.ReceiveAsync(
+            new ArraySegment<byte>(buffer), 
+            CancellationToken.None);
+        if (receiveResult.Count > 0)
+        {
+            var data = Encoding.UTF8.GetString(buffer, 0, receiveResult.Count);
+            Console.WriteLine($"{data}");
+        }
         while (!socket.CloseStatus.HasValue)
         {
             Console.WriteLine("Enter a message: ");

@@ -1,6 +1,6 @@
 ﻿using System.Net.WebSockets;
 
-namespace DotSignalServer.Server;
+namespace DotSignalServer.Server.Peers;
 
 public class Peer
 {

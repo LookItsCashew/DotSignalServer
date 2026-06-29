@@ -1,6 +1,7 @@
 using System.Net.WebSockets;
+using DotSignalServer.Server.Peers;
 
-namespace DotSignalServer.Server;
+namespace DotSignalServer.Server.Messages;
 
 public class MessageSender
 {
@@ -11,8 +12,7 @@ public class MessageSender
         ArraySegment<byte> message,
         WebSocketMessageType messageType,
         bool endOfMessage,
-        CancellationToken cancellationToken
-        )
+        CancellationToken cancellationToken)
     {
         try
         {
