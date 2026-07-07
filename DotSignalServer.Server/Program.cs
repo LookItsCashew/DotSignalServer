@@ -35,26 +35,9 @@ class Program
 
         app.UseHttpsRedirection();
 
-        #region HTTP Mappings
+        #region API Mappings
         
         // Add websocket middleware to request pipeline
-        app.Use(async (HttpContext context, Func<Task>next) =>
-        {
-            if (context.Request.Path.StartsWithSegments((PathString)"/ws"))
-            {
-                if (context.WebSockets.IsWebSocketRequest)
-                {
-                    using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                    //await Echo(webSocket);
-                }
-                else context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            }
-            else
-            {
-                await next();
-            }
-        });
-        
         app.MapGet("/",  async context =>
         {
             if (context.WebSockets.IsWebSocketRequest)

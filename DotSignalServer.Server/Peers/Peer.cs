@@ -4,7 +4,7 @@ namespace DotSignalServer.Server.Peers;
 
 public class Peer
 {
-    public required string Id { get; set; }
+    public string Id { get; init; } = string.Empty;
     public string Name { get; set; } = null!;
-    public WebSocket Socket { get; set; } = null!;
+    public WebSocket Socket { get; init; } = null!;
 }

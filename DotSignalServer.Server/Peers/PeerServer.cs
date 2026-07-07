@@ -6,20 +6,19 @@ namespace DotSignalServer.Server.Peers;
 
 public class PeerServer
 {
-    public List<Peer> ConnectedPeers = [];
-    public MessageSender GlobalMessageSender { get; } =  new();
+    private readonly List<Peer> _connectedPeers = [];
+    private readonly MessageSender _globalMessageSender = new();
 
     public async Task OnPeerConnected(Peer peer)
     {
-        if (!ConnectedPeers.Contains(peer))
+        if (!_connectedPeers.Contains(peer))
         {
-            ConnectedPeers.Add(peer);
-            GlobalMessageSender.SubscribedPeers.Add(peer);
-            await GlobalMessageSender.SendMessageToSubscribedPeersAsync(
+            _connectedPeers.Add(peer);
+            _globalMessageSender.SubscribedPeers.Add(peer);
+            ArraySegment<byte> data = new(Encoding.UTF8.GetBytes($"Peer connected. Total peers: {_connectedPeers.Count}"));
+            await _globalMessageSender.SendMessageToSubscribedPeersAsync(
                 peer,
-                new ArraySegment<byte>(Encoding.UTF8.GetBytes(
-                    $"There are a total of {ConnectedPeers.Count} peers connected.")
-                ),
+                data,
                 WebSocketMessageType.Text,
                 true,
                 CancellationToken.None
