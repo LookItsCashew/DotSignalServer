@@ -2,6 +2,7 @@ using System;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using DotSignalServer.Server.Peers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,29 +12,7 @@ namespace DotSignalServer.Server;
 
 class Program
 {
-    private static async Task Echo(WebSocket webSocket)
-    {
-        var buffer = new byte[1024 * 4];
-        var receiveResult = await webSocket.ReceiveAsync(
-            new ArraySegment<byte>(buffer), CancellationToken.None);
-
-        while (!receiveResult.CloseStatus.HasValue)
-        {
-            await webSocket.SendAsync(
-                new ArraySegment<byte>(buffer, 0, receiveResult.Count),
-                receiveResult.MessageType,
-                receiveResult.EndOfMessage,
-                CancellationToken.None);
-
-            receiveResult = await webSocket.ReceiveAsync(
-                new ArraySegment<byte>(buffer), CancellationToken.None);
-        }
-
-        await webSocket.CloseAsync(
-            receiveResult.CloseStatus.Value,
-            receiveResult.CloseStatusDescription,
-            CancellationToken.None);
-    }
+    private static readonly PeerServer PeerServer = new();
     
     public static void Main(string[] args)
     {
@@ -45,7 +24,7 @@ class Program
 
         var app = builder.Build();
 
-        var webSocketOptions = new WebSocketOptions { KeepAliveInterval = System.TimeSpan.FromMinutes(2) };
+        var webSocketOptions = new WebSocketOptions { KeepAliveInterval = TimeSpan.FromMinutes(2) };
         app.UseWebSockets(webSocketOptions);
 
         // Configure the HTTP request pipeline.
@@ -56,23 +35,18 @@ class Program
 
         app.UseHttpsRedirection();
 
-        #region HTTP Mappings
+        #region API Mappings
         
         // Add websocket middleware to request pipeline
-        app.Use(async (HttpContext context, Func<Task>next) =>
+        app.MapGet("/",  async context =>
         {
-            if (context.Request.Path.StartsWithSegments((PathString)"/ws"))
+            if (context.WebSockets.IsWebSocketRequest)
             {
-                if (context.WebSockets.IsWebSocketRequest)
-                {
-                    using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                    await Echo(webSocket);
-                }
-                else context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            }
-            else
-            {
-                await next();
+                using var socket = await context.WebSockets.AcceptWebSocketAsync();
+                var peer = new Peer() { Id = Guid.NewGuid().ToString(), Socket =  socket };
+                await PeerServer.OnPeerConnected(peer);
+                app.Logger.LogInformation($"Peer Connected. Id: {peer.Id + Environment.NewLine}");
+                await PeerServer.Echo(socket);
             }
         });
         

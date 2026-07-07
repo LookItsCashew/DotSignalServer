@@ -7,8 +7,4 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\DotSignalServer.Domain\DotSignalServer.Domain.csproj" />
-    </ItemGroup>
-
 </Project>
