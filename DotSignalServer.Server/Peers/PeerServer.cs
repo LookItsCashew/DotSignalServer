@@ -6,10 +6,13 @@ namespace DotSignalServer.Server.Peers;
 
 public class PeerServer
 {
-    private readonly List<Peer> _connectedPeers = [];
+    private readonly List<PeerServerConnection> _connectedPeers = [];
     private readonly MessageSender _globalMessageSender = new();
+    private static PeerServer? _instance;
+    
+    public static PeerServer Instance => _instance ??= new PeerServer();
 
-    public async Task OnPeerConnected(Peer peer)
+    public async Task OnPeerConnected(PeerServerConnection peer)
     {
         if (!_connectedPeers.Contains(peer))
         {
@@ -24,29 +27,5 @@ public class PeerServer
                 CancellationToken.None
             );
         }
-    }
-    
-    public async Task Echo(WebSocket webSocket)
-    {
-        var buffer = new byte[1024 * 4];
-        var receiveResult = await webSocket.ReceiveAsync(
-            new ArraySegment<byte>(buffer), CancellationToken.None);
-
-        while (!receiveResult.CloseStatus.HasValue)
-        {
-            await webSocket.SendAsync(
-                new ArraySegment<byte>(buffer, 0, receiveResult.Count),
-                receiveResult.MessageType,
-                receiveResult.EndOfMessage,
-                CancellationToken.None);
-
-            receiveResult = await webSocket.ReceiveAsync(
-                new ArraySegment<byte>(buffer), CancellationToken.None);
-        }
-
-        await webSocket.CloseAsync(
-            receiveResult.CloseStatus.Value,
-            receiveResult.CloseStatusDescription,
-            CancellationToken.None);
     }
 }

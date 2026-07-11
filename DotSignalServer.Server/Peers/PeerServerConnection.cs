@@ -2,9 +2,8 @@
 
 namespace DotSignalServer.Server.Peers;
 
-public class Peer
+public class PeerServerConnection
 {
-    public string Id { get; init; } = string.Empty;
-    public string Name { get; set; } = null!;
+    public Models.Peer PeerModel { get; init; } = null!;
     public WebSocket Socket { get; init; } = null!;
 }
