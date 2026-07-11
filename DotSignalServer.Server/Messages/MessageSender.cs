@@ -5,10 +5,10 @@ namespace DotSignalServer.Server.Messages;
 
 public class MessageSender
 {
-    public List<Peer> SubscribedPeers { get; } = [];
+    public List<PeerServerConnection> SubscribedPeers { get; } = [];
 
     public async Task SendMessageToSubscribedPeersAsync(
-        Peer sender,
+        PeerServerConnection sender,
         ArraySegment<byte> message,
         WebSocketMessageType messageType,
         bool endOfMessage,

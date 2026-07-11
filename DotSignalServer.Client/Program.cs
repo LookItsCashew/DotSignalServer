@@ -14,7 +14,7 @@ class Program
         Console.WriteLine("Enter a nickname: ");
         var name = Console.ReadLine();
         
-        await socket.ConnectAsync(new Uri("ws://localhost:5015/"), CancellationToken.None);
+        await socket.ConnectAsync(new Uri("ws://localhost:5015/connect"), CancellationToken.None);
         WebSocketReceiveResult receiveResult = await socket.ReceiveAsync(
             new ArraySegment<byte>(buffer), 
             CancellationToken.None);
